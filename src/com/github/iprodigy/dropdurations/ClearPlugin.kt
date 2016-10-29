@@ -1,9 +1,9 @@
 package com.github.iprodigy.dropdurations
 
-import com.google.gson.*
 import org.bukkit.Material
 import org.bukkit.entity.Item
 import org.bukkit.plugin.java.JavaPlugin
+import org.bukkit.craftbukkit.libs.com.google.gson.*
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
@@ -37,8 +37,8 @@ class ClearPlugin() : JavaPlugin() {
         try {
             fun buildConfig(): JsonObject {
                 val configObj = JsonObject()
-                configObj.addProperty("wait ticks", waitTicks)
-                configObj.addProperty("default wait", defaultWait.toMillis())
+                configObj.addProperty("wait_ticks", waitTicks)
+                configObj.addProperty("default_wait", defaultWait.toMillis())
 
                 val delaysArray = JsonArray()
 
@@ -49,11 +49,11 @@ class ClearPlugin() : JavaPlugin() {
 
                 val example2 = JsonObject()
                 val mats = JsonArray()
-                mats.add("diamond_sword")
-                mats.add("diamond_helmet")
-                mats.add("diamond_chestplate")
-                mats.add("diamond_leggings")
-                mats.add("diamond_boots")
+                arrayOf(
+                        "bow", "diamond_sword",
+                        "diamond_helmet", "diamond_chestplate",
+                        "diamond_leggings", "diamond_boots"
+                ).forEach { item -> mats.add(JsonPrimitive(item)) }
                 example2.add("materials", mats)
                 example2.addProperty("delay", 300000)
                 delaysArray.add(example2)
@@ -77,8 +77,8 @@ class ClearPlugin() : JavaPlugin() {
             val json = JsonParser().parse(FileReader(configFile))
             val config = if (json.isJsonObject) json.asJsonObject else buildConfig()
 
-            waitTicks = Math.max(config.get("wait ticks")?.asLong ?: waitTicks, 1)
-            defaultWait = Duration.ofMillis(Math.max(config.get("default wait")?.asLong ?: defaultWait.toMillis(), 1))
+            waitTicks = Math.max(config.get("wait_ticks")?.asLong ?: waitTicks, 1)
+            defaultWait = Duration.ofMillis(Math.max(config.get("default_wait")?.asLong ?: defaultWait.toMillis(), 1))
 
             fun writeDelay(matElement: JsonElement, delay: Long) {
                 val mat = Material.matchMaterial(matElement.asString ?: return) ?: return
