@@ -1,0 +1,5 @@
+name: DropDurations
+version: 1.0.0
+description: Removes item drops after specified durations
+author: iProdigy
+main: com.github.iprodigy.dropdurations.ClearPlugin
