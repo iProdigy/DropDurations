@@ -1,7 +1,9 @@
 package com.github.iprodigy.dropdurations
 
-class ItemTask(val plugin: ClearPlugin) : Runnable {
-    private val watched = plugin.watched
+import org.bukkit.entity.Item
+import java.util.HashMap
+
+class ItemTask(val watched: HashMap<Item, Long>) : Runnable {
 
     override fun run() {
         if (watched.isEmpty())

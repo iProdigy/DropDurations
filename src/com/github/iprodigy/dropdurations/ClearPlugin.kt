@@ -7,12 +7,11 @@ import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
-import java.io.IOException
 import java.time.Duration
 import java.util.HashMap
 
 class ClearPlugin() : JavaPlugin() {
-    internal val configFile = File("./plugins/DropDurations/config.json")
+    internal val configFile = File(dataFolder, "config.json")
     internal val delays = HashMap<Material, Duration>()
     internal val watched = HashMap<Item, Long>()
     internal var waitTicks = 20L
@@ -21,7 +20,7 @@ class ClearPlugin() : JavaPlugin() {
     override fun onEnable() {
         readConfig()
         server.pluginManager.registerEvents(DropListener(this), this)
-        server.scheduler.scheduleSyncRepeatingTask(this, ItemTask(this), 0L, waitTicks)
+        server.scheduler.scheduleSyncRepeatingTask(this, ItemTask(watched), 0L, waitTicks)
     }
 
     override fun onDisable() {
@@ -79,7 +78,12 @@ class ClearPlugin() : JavaPlugin() {
             val config = if (json.isJsonObject) json.asJsonObject else buildConfig()
 
             waitTicks = Math.max(config.get("wait ticks")?.asLong ?: waitTicks, 1)
-            defaultWait = Duration.ofMillis(Math.max(config.get("default ticks")?.asLong ?: defaultWait.toMillis(), 1))
+            defaultWait = Duration.ofMillis(Math.max(config.get("default wait")?.asLong ?: defaultWait.toMillis(), 1))
+
+            fun writeDelay(matElement: JsonElement, delay: Long) {
+                val mat = Material.matchMaterial(matElement.asString ?: return) ?: return
+                delays.put(mat, Duration.ofMillis(delay))
+            }
 
             config.get("delays")?.asJsonArray?.forEach { watch ->
                 run {
@@ -90,14 +94,9 @@ class ClearPlugin() : JavaPlugin() {
                     writeDelay(watchObj.get("material") ?: return@forEach, delay)
                 }
             }
-        } catch (ex: IOException) {
-            ex.printStackTrace()
+        } catch (ex: Exception) {
+            logger.severe(ex.message)
         }
-    }
-
-    fun writeDelay(matElement: JsonElement, delay: Long) {
-        val mat = Material.matchMaterial(matElement.asString) ?: return
-        delays.put(mat, Duration.ofMillis(delay))
     }
 
 }
